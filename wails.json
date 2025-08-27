@@ -1,0 +1,13 @@
+{
+  "name": "truyen-reader",
+  "description": "Skeleton Wails v2 project",
+  "frontend": {
+    "dir": "web",
+    "install": "npm install",
+    "build": "npm run build",
+    "devCommand": "npm run dev"
+  },
+  "backend": {
+    "dir": "backend"
+  }
+}
