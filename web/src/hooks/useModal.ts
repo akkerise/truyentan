@@ -1,16 +1,10 @@
-import { useContext } from 'react';
-import { UIContext } from '../context/UIContext';
+import { useCallback, useState } from 'react';
 
-export default function useModal(name: string) {
-  const context = useContext(UIContext);
-  if (!context) {
-    throw new Error('useModal must be used within a UIProvider');
-  }
-  const { modals, openModal, closeModal } = context;
-  const isOpen = !!modals[name];
-  return {
-    isOpen,
-    open: () => openModal(name),
-    close: () => closeModal(name),
-  };
+export default function useModal(initial = false) {
+  const [isOpen, setIsOpen] = useState(initial);
+
+  const open = useCallback(() => setIsOpen(true), []);
+  const close = useCallback(() => setIsOpen(false), []);
+
+  return { isOpen, open, close };
 }

@@ -1,3 +1,21 @@
+import { Suspense, lazy } from 'react';
+import useModal from '../hooks/useModal';
+import Modal from '../components/common/Modal';
+
+const Settings = lazy(() => import('./Settings'));
+
 export default function Home() {
-  return <div>Home</div>;
+  const { isOpen, open, close } = useModal();
+
+  return (
+    <div>
+      Home
+      <button onClick={open}>Open Settings</button>
+      <Suspense fallback={null}>
+        <Modal isOpen={isOpen} onClose={close}>
+          <Settings />
+        </Modal>
+      </Suspense>
+    </div>
+  );
 }
