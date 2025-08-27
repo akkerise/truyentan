@@ -17,6 +17,7 @@ import (
 	"github.com/truyentan/backend/internal/app/kafka"
 	"github.com/truyentan/backend/internal/db"
 	"github.com/truyentan/backend/internal/handlers"
+	"github.com/truyentan/backend/internal/middlewares"
 	"github.com/truyentan/backend/internal/services"
 )
 
@@ -51,6 +52,9 @@ func NewServer() *gin.Engine {
 	producer := kafka.NewProducer(brokers)
 	chapterHandler := handlers.NewChapterHandler(chapterService, producer)
 
+	progressService := services.NewProgressService(dbConn)
+	progressHandler := handlers.NewProgressHandler(progressService)
+
 	consumer := kafka.NewConsumer(brokers, "demo-group")
 	go func() {
 		if err := consumer.Consume(context.Background()); err != nil {
@@ -75,6 +79,11 @@ func NewServer() *gin.Engine {
 	chapters.GET(":id", chapterHandler.Get)
 	chapters.GET(":id/next", chapterHandler.GetNext)
 	chapters.GET(":id/prev", chapterHandler.GetPrev)
+
+	me := api.Group("/me")
+	me.Use(middlewares.AuthJWT(cfg.JWTSecret))
+	me.POST("/progress", progressHandler.Save)
+	me.GET("/progress/:novelId", progressHandler.Get)
 
 	r.GET("/healthz", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
