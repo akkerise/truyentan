@@ -32,16 +32,23 @@ func NewServer() *gin.Engine {
 	if err != nil {
 		logger.Fatal("failed to connect database", zap.Error(err))
 	}
-	cache.NewRedis(cfg.RedisHost, cfg.RedisPort)
+	redisClient := cache.NewRedis(cfg.RedisHost, cfg.RedisPort)
 
 	authService := services.NewAuthService(dbConn, cfg.JWTSecret, cfg.AccessTokenTTL, cfg.RefreshTokenTTL)
 	authHandler := handlers.NewAuthHandler(authService)
+	novelRepo := services.NewNovelRepository(dbConn)
+	novelService := services.NewNovelService(novelRepo, redisClient)
+	novelHandler := handlers.NewNovelHandler(novelService)
 
 	api := r.Group("/api/v1")
 	auth := api.Group("/auth")
 	auth.POST("/signup", authHandler.Signup)
 	auth.POST("/signin", authHandler.Signin)
 	auth.POST("/refresh", authHandler.Refresh)
+	novels := api.Group("/novels")
+	novels.GET("", novelHandler.ListNovels)
+	novels.GET("/:id", novelHandler.GetNovel)
+	novels.GET("/:id/chapters", novelHandler.ListChapters)
 
 	r.GET("/healthz", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
