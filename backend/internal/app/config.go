@@ -23,6 +23,8 @@ type Config struct {
 	JWTSecret       string
 	AccessTokenTTL  time.Duration
 	RefreshTokenTTL time.Duration
+
+	KafkaBrokers string
 }
 
 // LoadConfig reads configuration from the environment and optional .env file.
@@ -44,6 +46,7 @@ func LoadConfig() (*Config, error) {
 		JWTSecret:       os.Getenv("JWT_SECRET"),
 		AccessTokenTTL:  accessTTL,
 		RefreshTokenTTL: refreshTTL,
+		KafkaBrokers:    os.Getenv("KAFKA_BROKERS"),
 	}
 
 	return cfg, nil

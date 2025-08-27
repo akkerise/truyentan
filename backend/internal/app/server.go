@@ -1,6 +1,8 @@
 package app
 
 import (
+	"context"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -12,6 +14,7 @@ import (
 
 	docs "github.com/truyentan/backend/docs"
 	"github.com/truyentan/backend/internal/app/cache"
+	"github.com/truyentan/backend/internal/app/kafka"
 	"github.com/truyentan/backend/internal/db"
 	"github.com/truyentan/backend/internal/handlers"
 	"github.com/truyentan/backend/internal/services"
@@ -43,6 +46,18 @@ func NewServer() *gin.Engine {
 	novelService := services.NewNovelService(novelRepo, redisClient)
 	novelHandler := handlers.NewNovelHandler(novelService)
 
+	chapterService := services.NewChapterService(dbConn)
+	brokers := strings.Split(cfg.KafkaBrokers, ",")
+	producer := kafka.NewProducer(brokers)
+	chapterHandler := handlers.NewChapterHandler(chapterService, producer)
+
+	consumer := kafka.NewConsumer(brokers, "demo-group")
+	go func() {
+		if err := consumer.Consume(context.Background()); err != nil {
+			logger.Error("kafka consume error", zap.Error(err))
+		}
+	}()
+
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -55,6 +70,11 @@ func NewServer() *gin.Engine {
 	novels.GET("", novelHandler.ListNovels)
 	novels.GET("/:id", novelHandler.GetNovel)
 	novels.GET("/:id/chapters", novelHandler.ListChapters)
+
+	chapters := api.Group("/chapters")
+	chapters.GET(":id", chapterHandler.Get)
+	chapters.GET(":id/next", chapterHandler.GetNext)
+	chapters.GET(":id/prev", chapterHandler.GetPrev)
 
 	r.GET("/healthz", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
