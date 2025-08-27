@@ -1,5 +1,4 @@
-import axios, { AxiosError } from 'axios';
-import type { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL as string,
@@ -22,7 +21,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = [];
 };
 
-api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken');
   if (token) {
     config.headers = config.headers || {};
@@ -57,11 +56,11 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem('refreshToken');
-        const { data } = await axios.post<{ accessToken: string }>(
+        const { data } = await axios.post(
           `${import.meta.env.VITE_API_BASE_URL as string}/auth/refresh`,
           { refreshToken },
         );
-        const accessToken = data.accessToken;
+        const accessToken = (data as { accessToken: string }).accessToken;
         localStorage.setItem('accessToken', accessToken);
         processQueue(null, accessToken);
         if (originalRequest.headers) {
