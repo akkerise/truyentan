@@ -10,6 +10,8 @@ import (
 
 	"github.com/truyentan/backend/internal/app/cache"
 	"github.com/truyentan/backend/internal/db"
+	"github.com/truyentan/backend/internal/handlers"
+	"github.com/truyentan/backend/internal/services"
 )
 
 // NewServer creates and configures a new HTTP server.
@@ -26,10 +28,20 @@ func NewServer() *gin.Engine {
 	r.Use(ginzap.RecoveryWithZap(logger, true))
 	r.Use(cors.Default())
 
-	if _, err := db.Connect(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName); err != nil {
+	dbConn, err := db.Connect(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
+	if err != nil {
 		logger.Fatal("failed to connect database", zap.Error(err))
 	}
 	cache.NewRedis(cfg.RedisHost, cfg.RedisPort)
+
+	authService := services.NewAuthService(dbConn, cfg.JWTSecret, cfg.AccessTokenTTL, cfg.RefreshTokenTTL)
+	authHandler := handlers.NewAuthHandler(authService)
+
+	api := r.Group("/api/v1")
+	auth := api.Group("/auth")
+	auth.POST("/signup", authHandler.Signup)
+	auth.POST("/signin", authHandler.Signin)
+	auth.POST("/refresh", authHandler.Refresh)
 
 	r.GET("/healthz", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
