@@ -10,6 +10,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// @title Truyentan API
+// @version 1.0
+// @description Truyentan service API
+// @BasePath /api/v1
 func main() {
 	dsn := os.Getenv("DATABASE_URL")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})

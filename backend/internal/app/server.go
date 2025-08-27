@@ -6,8 +6,11 @@ import (
 	"github.com/gin-contrib/cors"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 
+	docs "github.com/truyentan/backend/docs"
 	"github.com/truyentan/backend/internal/app/cache"
 	"github.com/truyentan/backend/internal/db"
 	"github.com/truyentan/backend/internal/handlers"
@@ -36,6 +39,9 @@ func NewServer() *gin.Engine {
 
 	authService := services.NewAuthService(dbConn, cfg.JWTSecret, cfg.AccessTokenTTL, cfg.RefreshTokenTTL)
 	authHandler := handlers.NewAuthHandler(authService)
+
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	api := r.Group("/api/v1")
 	auth := api.Group("/auth")
