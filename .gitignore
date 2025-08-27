@@ -13,4 +13,37 @@ build/
 # Misc
 .DS_Store
 wailsjs/
+./.idea
 
+# OS
+.DS_Store
+Thumbs.db
+
+# Node/React (Vite)
+web/node_modules/
+web/dist/
+web/.vite/
+web/.cache/
+*.log
+
+# Go
+backend/bin/
+backend/build/
+coverage.out
+
+# Wails build artifacts
+/build/
+wails-build/
+*.AppImage
+*.deb
+*.rpm
+
+# Misc
+*.ico
+*.icns
+*.ttf
+*.otf
+*.zip
+*.tar
+*.tar.gz
+.env
