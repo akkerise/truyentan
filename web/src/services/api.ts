@@ -1,4 +1,5 @@
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosError } from 'axios';
+import type { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL as string,
@@ -7,7 +8,7 @@ const api = axios.create({
 let isRefreshing = false;
 let failedQueue: {
   resolve: (value?: unknown) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: unknown) => void;
 }[] = [];
 
 const processQueue = (error: unknown, token: string | null = null) => {
@@ -21,8 +22,8 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = [];
 };
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const token = localStorage.getItem('accessToken');
   if (token) {
     config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${token}`;
@@ -55,13 +56,13 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = localStorage.getItem("refreshToken");
-        const { data } = await axios.post(
+        const refreshToken = localStorage.getItem('refreshToken');
+        const { data } = await axios.post<{ accessToken: string }>(
           `${import.meta.env.VITE_API_BASE_URL as string}/auth/refresh`,
           { refreshToken },
         );
-        const accessToken = (data as any).accessToken;
-        localStorage.setItem("accessToken", accessToken);
+        const accessToken = data.accessToken;
+        localStorage.setItem('accessToken', accessToken);
         processQueue(null, accessToken);
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -79,10 +80,7 @@ api.interceptors.response.use(
   },
 );
 
-export const get = async <T = unknown>(
-  url: string,
-  config?: AxiosRequestConfig,
-): Promise<T> => {
+export const get = async <T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> => {
   try {
     const { data } = await api.get<T>(url, config);
     return data;

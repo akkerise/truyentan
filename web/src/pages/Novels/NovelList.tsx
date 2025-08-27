@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { get } from '../../services/api';
-import NovelCard, { NovelCardSkeleton, Novel } from '../../components/novels/NovelCard';
+import NovelCard, { NovelCardSkeleton } from '../../components/novels/NovelCard';
+import type { Novel } from '../../components/novels/NovelCard';
 import Spinner from '../../components/common/Spinner';
 
 export default function NovelList() {
