@@ -35,10 +35,13 @@ func NewServer() *gin.Engine {
 	if err != nil {
 		logger.Fatal("failed to connect database", zap.Error(err))
 	}
-	cache.NewRedis(cfg.RedisHost, cfg.RedisPort)
+	redisClient := cache.NewRedis(cfg.RedisHost, cfg.RedisPort)
 
 	authService := services.NewAuthService(dbConn, cfg.JWTSecret, cfg.AccessTokenTTL, cfg.RefreshTokenTTL)
 	authHandler := handlers.NewAuthHandler(authService)
+	novelRepo := services.NewNovelRepository(dbConn)
+	novelService := services.NewNovelService(novelRepo, redisClient)
+	novelHandler := handlers.NewNovelHandler(novelService)
 
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -48,6 +51,10 @@ func NewServer() *gin.Engine {
 	auth.POST("/signup", authHandler.Signup)
 	auth.POST("/signin", authHandler.Signin)
 	auth.POST("/refresh", authHandler.Refresh)
+	novels := api.Group("/novels")
+	novels.GET("", novelHandler.ListNovels)
+	novels.GET("/:id", novelHandler.GetNovel)
+	novels.GET("/:id/chapters", novelHandler.ListChapters)
 
 	r.GET("/healthz", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
