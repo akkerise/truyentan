@@ -36,9 +36,6 @@ type refreshRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
-// tokenResponse represents token pair response.
-type tokenResponse services.TokenPair
-
 // Signup godoc
 // @Summary User signup
 // @Description Create new user account
@@ -46,7 +43,7 @@ type tokenResponse services.TokenPair
 // @Accept json
 // @Produce json
 // @Param request body signupRequest true "signup request"
-// @Success 201 {object} tokenResponse
+// @Success 201 {object} services.TokenPair
 // @Failure 400 {object} gin.H
 // @Router /api/v1/auth/signup [post]
 func (h *AuthHandler) Signup(c *gin.Context) {
@@ -69,7 +66,7 @@ func (h *AuthHandler) Signup(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body signinRequest true "signin request"
-// @Success 200 {object} tokenResponse
+// @Success 200 {object} services.TokenPair
 // @Failure 401 {object} gin.H
 // @Router /api/v1/auth/signin [post]
 func (h *AuthHandler) Signin(c *gin.Context) {
@@ -92,7 +89,7 @@ func (h *AuthHandler) Signin(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body refreshRequest true "refresh request"
-// @Success 200 {object} tokenResponse
+// @Success 200 {object} services.TokenPair
 // @Failure 401 {object} gin.H
 // @Router /api/v1/auth/refresh [post]
 func (h *AuthHandler) Refresh(c *gin.Context) {

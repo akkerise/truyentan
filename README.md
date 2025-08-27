@@ -1,35 +1,66 @@
 # Truyen Reader
 
+[![CI](https://github.com/OWNER/truyentan/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/truyentan/actions/workflows/ci.yml)
+
 This repository contains the initial skeleton for a Wails v2 project with separate backend and frontend directories.
 
 ## Structure
 
-- `backend/` - Go backend stub.
+- `backend/` - Go backend.
   - `cmd/api/main.go` - entry point.
+  - `cmd/seed/main.go` - database seed command.
 - `web/` - React frontend.
   - `src/main.tsx`
   - `src/pages/`, `src/components/`, `src/context/`
 
-## Development
+## Getting Started
 
-Use the Wails CLI to run the application in development mode:
+### Prerequisites
+- Go 1.24+
+- Node.js 20+
+- Docker & docker compose
+- [Wails CLI](https://wails.io/docs/gettingstarted/installation)
 
+### Setup
+1. Copy `.env.example` to `.env` and adjust values.
+2. Start supporting services:
+   ```bash
+   docker compose up -d
+   ```
+3. Generate Swagger docs:
+   ```bash
+   make swagger
+   ```
+4. Seed the database:
+   ```bash
+   make seed
+   ```
+
+### Development
+- Run the app in development mode:
+  ```bash
+  make dev
+  ```
+- Start only the frontend:
+  ```bash
+  cd web && npm run dev
+  ```
+- Start only the backend:
+  ```bash
+  go run backend/cmd/api/main.go
+  ```
+
+### Build
+Build the desktop application:
 ```bash
-wails dev
+make build
 ```
 
-This will start the frontend and the Go backend. The backend Gin server listens on `127.0.0.1:API_PORT` where `API_PORT` is read from the environment (default `8080`).
-
-## Building
-
-To produce a desktop binary run:
-
+### Linting
+Run Go and frontend linters:
 ```bash
-wails build
+make lint
 ```
-
-The build targets Windows and Linux as configured in `wails.json`.
 
 ## Configuration
-
 See `wails.json` for project configuration.
