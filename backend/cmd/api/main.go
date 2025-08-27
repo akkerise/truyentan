@@ -23,6 +23,11 @@ func main() {
 	if err := internaldb.Migrate(db); err != nil {
 		log.Fatal(err)
 	}
+	if os.Getenv("SEED") == "true" {
+		if err := internaldb.Seed(db); err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	srv := app.NewServer()
 	if err := srv.Run(); err != nil {
